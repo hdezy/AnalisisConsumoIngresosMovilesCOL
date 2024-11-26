@@ -3,28 +3,38 @@ from fetch_data import fetch_data
 
 def process_data(data, table):
     """
-    Preprocesa los datos de Telefonía Móvil para análisis:
-    - Limpia y convierte columnas de consumo a valores numéricos.
-    - Calcula la columna 'Periodo' como fecha de inicio del trimestre.
-    - Elimina filas donde ambos consumos son cero.
-    - Ordena los datos por 'Periodo'.
+    Procesa los datos obtenidos desde la API según la tabla seleccionada.
 
     Args:
-        data (pd.DataFrame): Datos originales de Telefonía Móvil.
+        data (pd.DataFrame): Datos obtenidos desde la API.
+        table (str): Tabla seleccionada ('telefonia_movil' o 'internet_movil').
 
     Returns:
-        pd.DataFrame: Datos preprocesados.
+        pd.DataFrame: Datos procesados.
     """
-    # Crear una copia del DataFrame original
-    data = data.copy()
-
     if table == "telefonia_movil":
         # # Procesar datos de Telefonía Móvil
+        # data["consumo_prepago"] = pd.to_numeric(
+        #     data["consumo_prepago"].astype(str).str.replace(",", ""),
+        #     errors="coerce"
+        # ) / 1_000_000
+
+        # data["consumo_pospago"] = pd.to_numeric(
+        #     data["consumo_pospago"].astype(str).str.replace(",", ""),
+        #     errors="coerce"
+        # ) / 1_000_000
+
+        # data["ingresos_operacionales"] = pd.to_numeric(
+        #     data["ingresos_operacionales"].astype(str).str.replace(",", ""),
+        #     errors="coerce"
+        # ) / 1_000_000
+        
         numeric_columns = ["consumo_prepago", "consumo_pospago", "ingresos_operacionales"]
         for col in numeric_columns:
             if col in data.columns:
                 # Procesar valores paso a paso para evitar errores
                 data[col] = data[col].astype(str)  # Convertir a string
+                print(f"Valores originales en {col}:\n", data[col].head(10))  # Verificar valores iniciales
 
                 data[col] = (
                     data[col]
@@ -32,51 +42,15 @@ def process_data(data, table):
                     .str.replace(r"\.", "", regex=True)          # Eliminar puntos como separadores de miles
                     .str.replace(",", ".", regex=False)          # Reemplazar coma decimal por punto
                 )
+                print(f"Valores limpiados como texto {col}:\n", data[col].head(10))  # Verificar limpieza
+
                 # Convertir finalmente a float
                 data[col] = data[col].astype(float)
-    
+                print(f"Valores convertidos en número {col}:\n", data[col].head(10))  # Verificar valores finales
+
     elif table == "internet_movil":
-
-        # Procesar datos de Internet Móvil
+            # Procesar datos de Internet Móvil
         data["no_abonados"] = pd.to_numeric(data["no_abonados"], errors="coerce")
-
-    # Convertir Año y Trimestre a strings para concatenar
-    data["a_o"] = data["a_o"].astype(str)
-    data["trimestre"] = data["trimestre"].astype(str)
-
-    # Crear una lista de los primeros días de cada trimestre
-    primeros_dias_trimestre = ["01-01", "04-01", "07-01", "10-01"]
-
-    # Mapear el trimestre a su correspondiente primer día
-    data["Periodo"] = data.apply(
-        lambda row: pd.to_datetime(
-            row["a_o"] + "-" + primeros_dias_trimestre[int(row["trimestre"]) - 1]
-        ),
-        axis=1,
-    )
-    # Ordenar datos por la columna 'Periodo'
-    data = data.sort_values(by="Periodo").reset_index(drop=True)
-
-    # Añadir el nombre comercial de algunas empresas
-    data["proveedor"] = data["proveedor"].replace(
-        {"COLOMBIA TELECOMUNICACIONES S.A. E.S.P.": "MOVISTAR (COLOMBIA TELECOMUNICACIONES S.A. E.S.P.)"}
-    )
-
-    data["proveedor"] = data["proveedor"].replace(
-        {"COLOMBIA MOVIL  S.A ESP": "TIGO (COLOMBIA MOVIL S.A ESP)"}
-    )
-
-    data["proveedor"] = data["proveedor"].replace(
-        {"COMUNICACION CELULAR S A COMCEL S A": "CLARO (COMUNICACION CELULAR S A COMCEL S A)"}
-    )
-
-    data["proveedor"] = data["proveedor"].replace(
-        {"PARTNERS TELECOM COLOMBIA SAS": "WOM (PARTNERS TELECOM COLOMBIA SAS)"}
-    )
-
-    data["proveedor"] = data["proveedor"].replace(
-        {"EMPRESA DE TELECOMUNICACIONES DE BOGOTA S.A. ESP": "ETB (EMPRESA DE TELECOMUNICACIONES DE BOGOTA S.A. ESP)"}
-    )
 
     # Eliminar filas con valores faltantes o inválidos
     data.dropna(inplace=True)

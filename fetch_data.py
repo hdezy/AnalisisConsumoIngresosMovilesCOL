@@ -10,34 +10,6 @@ TABLES = {
     "telefonia_movil": "67wf-gj42",  # ID proporcionado en tu ejemplo
 }
 
-# def fetch_data(table, filters=None, limit=1000):
-#     """
-#     Conecta a la API y obtiene datos según filtros dinámicos.
-
-#     Args:
-#         table (str): Tabla a consultar ('internet_movil' o 'telefonia_movil').
-#         filters (dict): Diccionario de filtros (e.g., {"a_o": "2022", "trimestre": "3"}).
-#         limit (int): Límite de registros a traer.
-
-#     Returns:
-#         pd.DataFrame: Datos obtenidos como DataFrame.
-#     """
-#     # Validar si la tabla es válida
-#     if table not in TABLES:
-#         raise ValueError(f"Tabla '{table}' no es válida. Opciones: {list(TABLES.keys())}")
-    
-#     # Construir la consulta de filtros
-#     query = None
-#     if filters:
-#         query = " AND ".join([f"{key}='{value}'" for key, value in filters.items()])
-
-#     # Conectar con la API y traer los datos
-#     client = Socrata("www.datos.gov.co", APP_TOKEN)
-#     results = client.get(TABLES[table], where=query, limit=limit)
-
-#     # Convertir a DataFrame
-#     return pd.DataFrame.from_records(results)
-
 def fetch_data(table, filters=None, limit=1000):
     """
     Conecta a la API y obtiene datos según filtros dinámicos.
@@ -53,7 +25,6 @@ def fetch_data(table, filters=None, limit=1000):
     if table not in TABLES:
         raise ValueError(f"Tabla '{table}' no es válida. Opciones: {list(TABLES.keys())}")
 
-    # Construir la cláusula WHERE
     query = None
     if filters:
         clauses = []
@@ -67,9 +38,10 @@ def fetch_data(table, filters=None, limit=1000):
     # Conectar con la API
     client = Socrata("www.datos.gov.co", APP_TOKEN)
     results = client.get(TABLES[table], where=query, limit=limit)
-    return pd.DataFrame.from_records(results)
 
-
+    # Convertir los resultados a DataFrame
+    data = pd.DataFrame.from_records(results)
+    return data
 
 # Ejemplos de uso
 
@@ -87,7 +59,6 @@ def fetch_data(table, filters=None, limit=1000):
 # data = fetch_data("internet_movil", filters=filters, limit=10)
 # print("Datos filtrados por proveedor y año:")
 # print(data)
-
 
 ############################### Obtener Proveedores #################################
 
